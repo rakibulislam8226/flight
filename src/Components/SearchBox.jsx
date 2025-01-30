@@ -16,6 +16,7 @@ export default function FlightSearch() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [date, setDate] = useState("2025-02-05");
+  const [returnDate, setReturnDate] = useState("2025-02-05");
   const [tripType, setTripType] = useState("One way");
   const tripOptions = ["One way", "Round trip", "Multi-city"];
   const [tripTypeOpen, setTripTypeOpen] = useState(false);
@@ -195,14 +196,38 @@ export default function FlightSearch() {
                 )}
               </div>
             </div>
-            <div className="flex w-full lg:w-1/3 bg-transparent border border-gray-600 rounded-lg p-3">
-              <FaCalendarAlt className="text-gray-400 mr-2" />
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="bg-transparent outline-none text-white cursor-pointer w-full"
-              />
+
+            {/* Date section */}
+            <div className="flex flex-row w-full lg:w-1/3 bg-transparent border border-gray-600 rounded-lg p-3">
+              {tripType === "One way" ? (
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="bg-transparent outline-none text-white cursor-pointer w-full"
+                />
+              ) : (
+                <>
+                  <div className="flex flex-col w-full">
+                    <input
+                    placeholder="Departure"
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="bg-transparent outline-none text-white cursor-pointer w-full"
+                    />
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <input
+                    placeholder="Return"
+                      type="date"
+                      value={returnDate}
+                      onChange={(e) => setReturnDate(e.target.value)}
+                      className="bg-transparent outline-none text-white cursor-pointer w-full"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
