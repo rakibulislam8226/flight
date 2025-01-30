@@ -8,9 +8,9 @@ import {
 import { IoSwapHorizontal } from "react-icons/io5";
 import UseDebounce from "../CustomHooks/UseDebounce";
 
-const url = import.meta.env.RAPIDAPI_BASE_URL;
-const rapidapi_host = import.meta.env.RAPIDAPI_HOST;
-const rapidapi_key = import.meta.env.RAPIDAPI_KEY;
+const RAPIDAPI_BASE_URL = import.meta.env.VITE_RAPIDAPI_BASE_URL;
+const RAPIDAPI_HOST = import.meta.env.VITE_RAPIDAPI_HOST;
+const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY;
 
 export default function FlightSearch() {
   const [from, setFrom] = useState("");
@@ -22,23 +22,31 @@ export default function FlightSearch() {
   const [tripCategoryType, setTripCategoryType] = useState("Economy");
   const tripCategory = ["Economy", "Premium economy", "Business", "First"];
   const [tripCategoryOpen, setTripCategoryOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
+  const [fromSuggestions, setFromSuggestions] = useState([]);
+  const [toSuggestions, setToSuggestions] = useState([]);
 
   const debouncedFrom = UseDebounce(from, 500);
+  const debouncedTo = UseDebounce(to, 500);
 
   useEffect(() => {
     if (debouncedFrom) {
-      searchFlight(debouncedFrom);
+      searchFlight(debouncedFrom, "from");
     }
   }, [debouncedFrom]);
 
-  const searchFlight = async (term) => {
-    const url = `https://sky-scrapper.p.rapidapi.com/api/v1/flights/searchAirport?query=${term}&locale=en-US`;
+  useEffect(() => {
+    if (debouncedTo) {
+      searchFlight(debouncedTo, "to");
+    }
+  }, [debouncedTo]);
+
+  const searchFlight = async (term, type) => {
+    const url = `${RAPIDAPI_BASE_URL}/api/v1/flights/searchAirport?query=${term}&locale=en-US`;
     const options = {
       method: "GET",
       headers: {
-        "x-rapidapi-key": "2efc239d12mshad15c4957efb824p1d9159jsn90f85c26948f",
-        "x-rapidapi-host": "sky-scrapper.p.rapidapi.com",
+        "x-rapidapi-key": RAPIDAPI_KEY,
+        "x-rapidapi-host": RAPIDAPI_HOST,
       },
     };
 
@@ -46,21 +54,28 @@ export default function FlightSearch() {
       const response = await fetch(url, options);
       const result = await response.json();
       const suggestionsArray = result.data || [];
-      setSuggestions(suggestionsArray);
+      if (type === "from") {
+        setFromSuggestions(suggestionsArray);
+      } else if (type === "to") {
+        setToSuggestions(suggestionsArray);
+      }
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleInputSearch = (e) => {
+  const handleFromInputSearch = (e) => {
     setFrom(e.target.value);
-    searchFlight(e.target.value);
+  };
+
+  const handleToInputSearch = (e) => {
+    setTo(e.target.value);
   };
 
   return (
     <div className="bg-[#202124] text-white">
       <div className="relative max-w-[1440px] m-auto text-center">
-        <div className="lg:bg-[#35373A] p-4 lg:rounded-lg shadow-md  flex flex-col gap-4">
+        <div className="lg:bg-[#35373A] p-4 lg:rounded-lg shadow-md flex flex-col gap-4">
           <div className="flex items-center gap-2 text-gray-400 text-sm z-100">
             <div className="relative">
               <button
@@ -74,7 +89,7 @@ export default function FlightSearch() {
                   {tripOptions.map((option) => (
                     <div
                       key={option}
-                      className="px-4 py-2 hover:lg:bg-[#3b3c3d]  cursor-pointer"
+                      className="px-4 py-2 hover:lg:bg-[#3b3c3d] cursor-pointer"
                       onClick={() => {
                         setTripType(option);
                         setTripTypeOpen(false);
@@ -123,22 +138,22 @@ export default function FlightSearch() {
                   type="text"
                   placeholder="Where from?"
                   value={from}
-                  onChange={handleInputSearch}
+                  onChange={handleFromInputSearch}
                   className="w-full bg-transparent outline-none text-white placeholder-gray-400 p-3 rounded-lg border border-gray-600"
                 />
-                {/* Display suggestions in a dropdown */}
-                {from && suggestions.length > 0 && (
+                {/* Display suggestions for "Where from?" */}
+                {from && fromSuggestions.length > 0 && (
                   <div className="absolute bg-[#35373A] w-full mt-1 rounded-lg shadow-md max-h-40 overflow-y-auto">
-                    {suggestions.map((suggestion) => (
+                    {fromSuggestions.map((suggestion) => (
                       <div
                         key={suggestion.entityId}
-                        className="px-4 py-2 hover:bg-placeholder-gray-400 cursor-pointer"
+                        className="px-4 py-2 hover:bg-gray-600 cursor-pointer"
                         onClick={() => {
                           setFrom(
                             suggestion.navigation.relevantHotelParams
                               .localizedName
                           );
-                          setSuggestions([]);
+                          setFromSuggestions([]);
                         }}
                       >
                         {suggestion.presentation.suggestionTitle}
@@ -155,9 +170,29 @@ export default function FlightSearch() {
                   type="text"
                   placeholder="Where to?"
                   value={to}
-                  onChange={(e) => setTo(e.target.value)}
+                  onChange={handleToInputSearch}
                   className="w-full bg-transparent outline-none text-white placeholder-gray-400 p-3 rounded-lg border border-gray-600"
                 />
+                {/* Display suggestions for "Where to?" */}
+                {to && toSuggestions.length > 0 && (
+                  <div className="absolute bg-[#35373A] w-full mt-1 rounded-lg shadow-md max-h-40 overflow-y-auto">
+                    {toSuggestions.map((suggestion) => (
+                      <div
+                        key={suggestion.entityId}
+                        className="px-4 py-2 hover:bg-gray-600 cursor-pointer"
+                        onClick={() => {
+                          setTo(
+                            suggestion.navigation.relevantHotelParams
+                              .localizedName
+                          );
+                          setToSuggestions([]);
+                        }}
+                      >
+                        {suggestion.presentation.suggestionTitle}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex w-full lg:w-1/3 bg-transparent border border-gray-600 rounded-lg p-3">
