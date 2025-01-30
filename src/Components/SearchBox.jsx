@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  FaSearch,
-  FaCalendarAlt,
-  FaChevronDown,
-  FaChevronUp,
-} from "react-icons/fa";
+import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { IoSwapHorizontal } from "react-icons/io5";
 import UseDebounce from "../CustomHooks/UseDebounce";
 
@@ -16,15 +11,17 @@ export default function FlightSearch() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [date, setDate] = useState("2025-02-05");
-  const [returnDate, setReturnDate] = useState("2025-02-05");
+  const [returnDate, setReturnDate] = useState("2025-02-06");
   const [tripType, setTripType] = useState("One way");
   const tripOptions = ["One way", "Round trip", "Multi-city"];
   const [tripTypeOpen, setTripTypeOpen] = useState(false);
-  const [tripCategoryType, setTripCategoryType] = useState("Economy");
+  const [tripCategoryType, setTripCategoryType] = useState("economy");
   const tripCategory = ["Economy", "Premium economy", "Business", "First"];
   const [tripCategoryOpen, setTripCategoryOpen] = useState(false);
   const [fromSuggestions, setFromSuggestions] = useState([]);
   const [toSuggestions, setToSuggestions] = useState([]);
+  const [selectedFromAirport, setSelectedFromAirport] = useState(null);
+  const [selectedToAirport, setSelectedToAirport] = useState(null);
 
   const debouncedFrom = UseDebounce(from, 500);
   const debouncedTo = UseDebounce(to, 500);
@@ -71,6 +68,48 @@ export default function FlightSearch() {
 
   const handleToInputSearch = (e) => {
     setTo(e.target.value);
+  };
+
+  const SearchSelectedFlight = async () => {
+    if (!selectedFromAirport || !selectedToAirport) {
+      alert("Please select a valid airport from the suggestions.");
+      return;
+    }
+
+    console.log("Selected from airport:", selectedFromAirport);
+    console.log("Selected to airport:", selectedToAirport);
+
+    const fromId = selectedFromAirport?.skyId;
+    const toId = selectedToAirport?.skyId;
+    const fromEntityId = selectedFromAirport.entityId;
+    const toEntityId = selectedToAirport.entityId;
+
+    if (!fromId || !toId) {
+      alert("Invalid airport data. Please try selecting again.");
+      return;
+    }
+
+    const deptureDate = date || "2025-02-05";
+    const validTripType = tripType || "One way";
+    const validTripCategoryType = tripCategoryType || "economy";
+
+    console.log(fromId, toId, fromEntityId, toEntityId, date, returnDate);
+    const flightUrl = `${RAPIDAPI_BASE_URL}/api/v2/flights/searchFlights?originSkyId=${fromId}&destinationSkyId=${toId}&originEntityId=${fromEntityId}&destinationEntityId=${toEntityId}&date=${deptureDate}&cabinClass=${validTripCategoryType}&adults=1&sortBy=best&currency=USD&market=en-US&countryCode=US`;
+    console.log("Flight search URL:", flightUrl);
+
+    try {
+      const response = await fetch(flightUrl, {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": RAPIDAPI_KEY,
+          "x-rapidapi-host": RAPIDAPI_HOST,
+        },
+      });
+      const result = await response.json();
+      console.log("Flight search result:", result);
+    } catch (error) {
+      console.error("Error fetching flights:", error);
+    }
   };
 
   return (
@@ -150,10 +189,12 @@ export default function FlightSearch() {
                         key={suggestion.entityId}
                         className="px-4 py-2 hover:bg-gray-600 cursor-pointer"
                         onClick={() => {
+                          console.log("first", fromSuggestions);
                           setFrom(
                             suggestion.navigation.relevantHotelParams
                               .localizedName
                           );
+                          setSelectedFromAirport(suggestion);
                           setFromSuggestions([]);
                         }}
                       >
@@ -186,6 +227,7 @@ export default function FlightSearch() {
                             suggestion.navigation.relevantHotelParams
                               .localizedName
                           );
+                          setSelectedToAirport(suggestion);
                           setToSuggestions([]);
                         }}
                       >
@@ -210,7 +252,7 @@ export default function FlightSearch() {
                 <>
                   <div className="flex flex-col w-full">
                     <input
-                    placeholder="Departure"
+                      placeholder="Departure"
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
@@ -219,7 +261,7 @@ export default function FlightSearch() {
                   </div>
                   <div className="flex flex-col w-full">
                     <input
-                    placeholder="Return"
+                      placeholder="Return"
                       type="date"
                       value={returnDate}
                       onChange={(e) => setReturnDate(e.target.value)}
@@ -231,7 +273,10 @@ export default function FlightSearch() {
             </div>
           </div>
 
-          <button className="bg-blue-500 hover:bg-blue-600 p-3 rounded-lg flex items-center justify-center gap-2 w-1/4 mx-auto">
+          <button
+            className="bg-blue-500 hover:bg-blue-600 p-3 rounded-lg flex items-center justify-center gap-2 w-1/4 mx-auto"
+            onClick={SearchSelectedFlight}
+          >
             <FaSearch /> Search
           </button>
         </div>
