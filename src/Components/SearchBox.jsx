@@ -6,6 +6,7 @@ import {
   FaChevronUp,
 } from "react-icons/fa";
 import { IoSwapHorizontal } from "react-icons/io5";
+import UseDebounce from "../CustomHooks/UseDebounce";
 
 const url = import.meta.env.RAPIDAPI_BASE_URL;
 const rapidapi_host = import.meta.env.RAPIDAPI_HOST;
@@ -21,27 +22,34 @@ export default function FlightSearch() {
   const [tripCategoryType, setTripCategoryType] = useState("Economy");
   const tripCategory = ["Economy", "Premium economy", "Business", "First"];
   const [tripCategoryOpen, setTripCategoryOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
-  useEffect(() => {}, []);
+  const debouncedFrom = UseDebounce(from, 500);
+
+  useEffect(() => {
+    if (debouncedFrom) {
+      searchFlight(debouncedFrom);
+    }
+  }, [debouncedFrom]);
 
   const searchFlight = async (term) => {
-    const resp = await fetch(
-      `${url}/api/v1/flights/searchAirport?query=${term}&locale=en-US`,
-      {
-        method: "GET",
-        headers: {
-          "X-RapidAPI-Host": rapidapi_host,
-          "X-RapidAPI-Key": rapidapi_key,
-        },
-      }
-    );
-    const data = await resp.json();
+    const url = `https://sky-scrapper.p.rapidapi.com/api/v1/flights/searchAirport?query=${term}&locale=en-US`;
+    const options = {
+      method: "GET",
+      headers: {
+        "x-rapidapi-key": "2efc239d12mshad15c4957efb824p1d9159jsn90f85c26948f",
+        "x-rapidapi-host": "sky-scrapper.p.rapidapi.com",
+      },
+    };
 
-    if (!resp.ok) {
-      console.error("error happen", data);
+    try {
+      const response = await fetch(url, options);
+      const result = await response.json();
+      const suggestionsArray = result.data || [];
+      setSuggestions(suggestionsArray);
+    } catch (error) {
+      console.error(error);
     }
-
-    console.log(data);
   };
 
   const handleInputSearch = (e) => {
@@ -118,6 +126,26 @@ export default function FlightSearch() {
                   onChange={handleInputSearch}
                   className="w-full bg-transparent outline-none text-white placeholder-gray-400 p-3 rounded-lg border border-gray-600"
                 />
+                {/* Display suggestions in a dropdown */}
+                {from && suggestions.length > 0 && (
+                  <div className="absolute bg-[#35373A] w-full mt-1 rounded-lg shadow-md max-h-40 overflow-y-auto">
+                    {suggestions.map((suggestion) => (
+                      <div
+                        key={suggestion.entityId}
+                        className="px-4 py-2 hover:bg-placeholder-gray-400 cursor-pointer"
+                        onClick={() => {
+                          setFrom(
+                            suggestion.navigation.relevantHotelParams
+                              .localizedName
+                          );
+                          setSuggestions([]);
+                        }}
+                      >
+                        {suggestion.presentation.suggestionTitle}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-center bg-gray-700 p-2 rounded-full">
                 <IoSwapHorizontal className="text-white text-lg" />
