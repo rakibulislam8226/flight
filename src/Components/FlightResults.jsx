@@ -26,7 +26,11 @@ export default function FlightResults({ results }) {
           {results.map((flight, index) => (
             <div
               key={index}
-              className="p-1 border-bottom border-start border-end"
+              className={`p-1 ${
+                index === 0
+                  ? "border border-gray-400"
+                  : "border-b border-l border-r border-gray-400"
+              }`}
             >
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">

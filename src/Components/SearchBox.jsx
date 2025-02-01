@@ -10,12 +10,17 @@ const RAPIDAPI_HOST = import.meta.env.VITE_RAPIDAPI_HOST;
 const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY;
 
 export default function FlightSearch() {
+  const getDefaultDate = () => {
+    const today = new Date();
+    today.setDate(today.getDate() + 5);
+    return today.toISOString().split("T")[0];
+  };
   const [input, setInput] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [inputTo, setInputTo] = useState("");
-  const [date, setDate] = useState("2025-02-05");
-  const [returnDate, setReturnDate] = useState("2025-02-06");
+  const [date, setDate] = useState(getDefaultDate());
+  const [returnDate, setReturnDate] = useState(getDefaultDate());
   const [tripType, setTripType] = useState("one_way");
   const tripOptions = tripOptionsChoices;
   const [tripTypeOpen, setTripTypeOpen] = useState(false);
@@ -175,12 +180,15 @@ export default function FlightSearch() {
                   {tripCategory.map((option) => (
                     <div
                       key={option.value}
-                      className="px-4 py-2 hover:bg-[#3b3c3d] cursor-pointer"
+                      className="px-4 py-2 hover:bg-[#3b3c3d] cursor-pointer flex flex-row gap-2"
                       onClick={() => {
                         setTripCategoryType(option.value);
                         setTripCategoryOpen(false);
                       }}
                     >
+                      {tripCategoryType === option.value && (
+                        <FaCheck className="text-gray-400" />
+                      )}
                       {option.label}
                     </div>
                   ))}
@@ -260,8 +268,14 @@ export default function FlightSearch() {
             <div className="flex flex-row w-full lg:w-1/3 bg-transparent border border-gray-600 rounded-lg p-3">
               {tripType === "round_trip" ? (
                 <>
-                  <div className="flex flex-col w-full">
+                  <div
+                    className="flex flex-col w-full"
+                    onClick={() =>
+                      document.getElementById("departure-date").showPicker()
+                    }
+                  >
                     <input
+                      id="departure-date"
                       placeholder="Departure"
                       type="date"
                       value={date}
@@ -269,8 +283,14 @@ export default function FlightSearch() {
                       className="bg-transparent outline-none text-white cursor-pointer w-full"
                     />
                   </div>
-                  <div className="flex flex-col w-full">
+                  <div
+                    className="flex flex-col w-full"
+                    onClick={() =>
+                      document.getElementById("return-date").showPicker()
+                    }
+                  >
                     <input
+                      id="return-date"
                       placeholder="Return"
                       type="date"
                       value={returnDate}
@@ -280,8 +300,14 @@ export default function FlightSearch() {
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col w-full">
+                <div
+                  className="flex flex-col w-full cursor-pointer"
+                  onClick={() =>
+                    document.getElementById("departure-date").showPicker()
+                  }
+                >
                   <input
+                    id="departure-date"
                     placeholder="Departure"
                     type="date"
                     value={date}
@@ -294,7 +320,7 @@ export default function FlightSearch() {
           </div>
 
           <button
-            className="relative bg-blue-500 hover:bg-blue-600 p-3 rounded-lg flex items-center justify-center gap-2 w-1/5 mx-auto cursor top-[34px]"
+            className="bg-blue-500 hover:bg-blue-600 p-3 rounded-lg flex items-center justify-center gap-2 w-1/5 mx-auto hover:cursor-pointer"
             onClick={SearchSelectedFlight}
           >
             <FaSearch /> Search
@@ -309,7 +335,7 @@ export default function FlightSearch() {
           </p>
         </div>
       ) : !hasSearched ? (
-        <div className="mt-6">
+        <div className="mt-6 p-4">
           <h2 className="relative max-w-[1440px] lg:m-auto">
             Find cheap flights from United Kingdom to anywhere
           </h2>
