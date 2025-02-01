@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaSearch, FaChevronDown, FaChevronUp, FaCheck } from "react-icons/fa";
 import { IoSwapHorizontal } from "react-icons/io5";
 import UseDebounce from "../CustomHooks/UseDebounce";
 import FlightResults from "./FlightResults";
@@ -10,8 +10,10 @@ const RAPIDAPI_HOST = import.meta.env.VITE_RAPIDAPI_HOST;
 const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY;
 
 export default function FlightSearch() {
+  const [input, setInput] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [inputTo, setInputTo] = useState("");
   const [date, setDate] = useState("2025-02-05");
   const [returnDate, setReturnDate] = useState("2025-02-06");
   const [tripType, setTripType] = useState("one_way");
@@ -28,8 +30,8 @@ export default function FlightSearch() {
   const [flightResults, setFlightResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false); // New state to track if search is performed
 
-  const debouncedFrom = UseDebounce(from, 500);
-  const debouncedTo = UseDebounce(to, 500);
+  const debouncedFrom = UseDebounce(input, 500);
+  const debouncedTo = UseDebounce(inputTo, 500);
 
   useEffect(() => {
     if (debouncedFrom) {
@@ -68,11 +70,11 @@ export default function FlightSearch() {
   };
 
   const handleFromInputSearch = (e) => {
-    setFrom(e.target.value);
+    setInput(e.target.value);
   };
 
   const handleToInputSearch = (e) => {
-    setTo(e.target.value);
+    setInputTo(e.target.value);
   };
 
   const SearchSelectedFlight = async () => {
@@ -108,10 +110,10 @@ export default function FlightSearch() {
       const result = await response.json();
       setFlightResults(result.data.itineraries || []);
       console.log("Flight Results:", result.data.itineraries);
-      setHasSearched(true); 
+      setHasSearched(true);
     } catch (error) {
       console.error("Error fetching flights:", error);
-      setHasSearched(true); 
+      setHasSearched(true);
     }
   };
 
@@ -137,13 +139,16 @@ export default function FlightSearch() {
                   {tripOptions.map((option) => (
                     <div
                       key={option.value}
-                      className="px-4 py-2 hover:bg-[#3b3c3d] cursor-pointer"
+                      className="px-4 py-2 hover:bg-[#3b3c3d] cursor-pointer flex flex-row gap-2"
                       onClick={() => {
                         setTripType(option.value);
                         setTripTypeOpen(false);
                       }}
                     >
-                      {option.label} {/* Display label */}
+                      {tripType === option.value && (
+                        <FaCheck className="text-gray-400" />
+                      )}
+                      {option.label}
                     </div>
                   ))}
                 </div>
@@ -190,12 +195,12 @@ export default function FlightSearch() {
                 <input
                   type="text"
                   placeholder="Where from?"
-                  value={from}
+                  value={input}
                   onChange={handleFromInputSearch}
                   className="w-full bg-transparent outline-none text-white placeholder-gray-400 p-3 rounded-lg border border-gray-600"
                 />
                 {/* Display suggestions for "Where from?" */}
-                {from && fromSuggestions.length > 0 && (
+                {input && fromSuggestions.length > 0 && (
                   <div className="absolute bg-[#35373A] w-full mt-1 rounded-lg shadow-md max-h-40 overflow-y-auto">
                     {fromSuggestions.map((suggestion) => (
                       <div
@@ -223,12 +228,12 @@ export default function FlightSearch() {
                 <input
                   type="text"
                   placeholder="Where to?"
-                  value={to}
+                  value={inputTo}
                   onChange={handleToInputSearch}
                   className="w-full bg-transparent outline-none text-white placeholder-gray-400 p-3 rounded-lg border border-gray-600"
                 />
                 {/* Display suggestions for "Where to?" */}
-                {to && toSuggestions.length > 0 && (
+                {inputTo && toSuggestions.length > 0 && (
                   <div className="absolute bg-[#35373A] w-full mt-1 rounded-lg shadow-md max-h-40 overflow-y-auto">
                     {toSuggestions.map((suggestion) => (
                       <div
@@ -289,7 +294,7 @@ export default function FlightSearch() {
           </div>
 
           <button
-            className="bg-blue-500 hover:bg-blue-600 p-3 rounded-lg flex items-center justify-center gap-2 w-1/4 mx-auto cursor"
+            className="relative bg-blue-500 hover:bg-blue-600 p-3 rounded-lg flex items-center justify-center gap-2 w-1/5 mx-auto cursor top-[34px]"
             onClick={SearchSelectedFlight}
           >
             <FaSearch /> Search
