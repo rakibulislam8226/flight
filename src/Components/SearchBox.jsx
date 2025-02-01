@@ -3,6 +3,7 @@ import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { IoSwapHorizontal } from "react-icons/io5";
 import UseDebounce from "../CustomHooks/UseDebounce";
 import FlightResults from "./FlightResults";
+import { cabinClass, tripOptionsChoices } from "../constants/FLightConstants";
 
 const RAPIDAPI_BASE_URL = import.meta.env.VITE_RAPIDAPI_BASE_URL;
 const RAPIDAPI_HOST = import.meta.env.VITE_RAPIDAPI_HOST;
@@ -13,11 +14,12 @@ export default function FlightSearch() {
   const [to, setTo] = useState("");
   const [date, setDate] = useState("2025-02-05");
   const [returnDate, setReturnDate] = useState("2025-02-06");
-  const [tripType, setTripType] = useState("One way");
-  const tripOptions = ["One way", "Round trip", "Multi-city"];
+  const [tripType, setTripType] = useState("one_way");
+  const tripOptions = tripOptionsChoices;
   const [tripTypeOpen, setTripTypeOpen] = useState(false);
+  const tripCategory = cabinClass;
   const [tripCategoryType, setTripCategoryType] = useState("economy");
-  const tripCategory = ["Economy", "Premium economy", "Business", "First"];
+
   const [tripCategoryOpen, setTripCategoryOpen] = useState(false);
   const [fromSuggestions, setFromSuggestions] = useState([]);
   const [toSuggestions, setToSuggestions] = useState([]);
@@ -119,20 +121,25 @@ export default function FlightSearch() {
                 className="px-4 py-2 rounded-lg flex items-center gap-2"
                 onClick={() => setTripTypeOpen(!tripTypeOpen)}
               >
-                {tripType} {tripTypeOpen ? <FaChevronUp /> : <FaChevronDown />}
+                {/* Map tripType to the label */}
+                {tripOptions.find((option) => option.value === tripType)
+                  ?.label || "Select Trip Type"}
+                {tripTypeOpen ? <FaChevronUp /> : <FaChevronDown />}
               </button>
+
+              {/* Dropdown */}
               {tripTypeOpen && (
                 <div className="absolute bg-[#35373A] mt-1 rounded-lg shadow-md w-full">
                   {tripOptions.map((option) => (
                     <div
-                      key={option}
-                      className="px-4 py-2 hover:lg:bg-[#3b3c3d] cursor-pointer"
+                      key={option.value}
+                      className="px-4 py-2 hover:bg-[#3b3c3d] cursor-pointer"
                       onClick={() => {
-                        setTripType(option);
+                        setTripType(option.value);
                         setTripTypeOpen(false);
                       }}
                     >
-                      {option}
+                      {option.label} {/* Display label */}
                     </div>
                   ))}
                 </div>
@@ -146,21 +153,27 @@ export default function FlightSearch() {
                 className="px-4 py-2 rounded-lg flex items-center gap-2"
                 onClick={() => setTripCategoryOpen(!tripCategoryOpen)}
               >
-                {tripCategoryType}{" "}
+                {/* Ensure the default selected option is "Economy" */}
+                {tripCategory.find(
+                  (option) => option.value === tripCategoryType
+                )?.label || "Select Class"}{" "}
+                {/* Default text if no selection */}
                 {tripCategoryOpen ? <FaChevronUp /> : <FaChevronDown />}
               </button>
+
+              {/* Dropdown */}
               {tripCategoryOpen && (
                 <div className="absolute bg-[#35373A] rounded-lg shadow-md w-full">
                   {tripCategory.map((option) => (
                     <div
-                      key={option}
-                      className="px-4 py-2 hover:lg:bg-[#3b3c3d] cursor-pointer"
+                      key={option.value}
+                      className="px-4 py-2 hover:bg-[#3b3c3d] cursor-pointer"
                       onClick={() => {
-                        setTripCategoryType(option);
+                        setTripCategoryType(option.value);
                         setTripCategoryOpen(false);
                       }}
                     >
-                      {option}
+                      {option.label}
                     </div>
                   ))}
                 </div>

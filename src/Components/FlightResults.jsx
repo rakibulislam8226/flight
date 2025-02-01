@@ -10,7 +10,6 @@ const formatTime = (isoString) => {
 };
 
 export default function FlightResults({ results }) {
-    console.log(results)
   if (!results || !Array.isArray(results) || results.length === 0) {
     return (
       <div className="mt-6">
