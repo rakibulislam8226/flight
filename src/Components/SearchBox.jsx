@@ -26,6 +26,7 @@ export default function FlightSearch() {
   const [selectedFromAirport, setSelectedFromAirport] = useState(null);
   const [selectedToAirport, setSelectedToAirport] = useState(null);
   const [flightResults, setFlightResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false); // New state to track if search is performed
 
   const debouncedFrom = UseDebounce(from, 500);
   const debouncedTo = UseDebounce(to, 500);
@@ -90,8 +91,9 @@ export default function FlightSearch() {
     }
 
     const deptureDate = date || "2025-02-05";
-    const validTripType = tripType || "One way";
+    const validTripType = tripType || "one_way"; // All type of trips not found in API response
     const validTripCategoryType = tripCategoryType || "economy";
+    console.log(validTripCategoryType);
 
     const flightUrl = `${RAPIDAPI_BASE_URL}/api/v2/flights/searchFlights?originSkyId=${fromId}&destinationSkyId=${toId}&originEntityId=${fromEntityId}&destinationEntityId=${toEntityId}&date=${deptureDate}&cabinClass=${validTripCategoryType}&adults=1&sortBy=best&currency=USD&market=en-US&countryCode=US`;
 
@@ -106,14 +108,16 @@ export default function FlightSearch() {
       const result = await response.json();
       setFlightResults(result.data.itineraries || []);
       console.log("Flight Results:", result.data.itineraries);
+      setHasSearched(true); 
     } catch (error) {
       console.error("Error fetching flights:", error);
+      setHasSearched(true); 
     }
   };
 
   return (
     <>
-      <div className="relative max-w-[1440px] m-auto text-center">
+      <div className="relative max-w-[1440px] lg:m-auto text-center">
         <div className="lg:bg-[#35373A] p-4 lg:rounded-lg shadow-md flex flex-col gap-4">
           <div className="flex items-center gap-2 text-gray-400 text-sm z-100">
             <div className="relative">
@@ -145,9 +149,8 @@ export default function FlightSearch() {
                 </div>
               )}
             </div>
-
-            <span>1</span>
-
+            {/* Hardcoded for now. will update in future needed as like google */}
+            <span>1</span>{" "}
             <div className="relative">
               <button
                 className="px-4 py-2 rounded-lg flex items-center gap-2"
@@ -250,14 +253,7 @@ export default function FlightSearch() {
 
             {/* Date section */}
             <div className="flex flex-row w-full lg:w-1/3 bg-transparent border border-gray-600 rounded-lg p-3">
-              {tripType === "One way" ? (
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="bg-transparent outline-none text-white cursor-pointer w-full"
-                />
-              ) : (
+              {tripType === "round_trip" ? (
                 <>
                   <div className="flex flex-col w-full">
                     <input
@@ -278,12 +274,22 @@ export default function FlightSearch() {
                     />
                   </div>
                 </>
+              ) : (
+                <div className="flex flex-col w-full">
+                  <input
+                    placeholder="Departure"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="bg-transparent outline-none text-white cursor-pointer w-full"
+                  />
+                </div>
               )}
             </div>
           </div>
 
           <button
-            className="bg-blue-500 hover:bg-blue-600 p-3 rounded-lg flex items-center justify-center gap-2 w-1/4 mx-auto"
+            className="bg-blue-500 hover:bg-blue-600 p-3 rounded-lg flex items-center justify-center gap-2 w-1/4 mx-auto cursor"
             onClick={SearchSelectedFlight}
           >
             <FaSearch /> Search
@@ -291,7 +297,21 @@ export default function FlightSearch() {
         </div>
       </div>
       {/* Display Flight Results Below */}
-      <FlightResults results={flightResults} />
+      {hasSearched && flightResults.length === 0 ? (
+        <div className="mt-6">
+          <p className="text-center text-lg font-semibold text-gray-400">
+            No flights found
+          </p>
+        </div>
+      ) : !hasSearched ? (
+        <div className="mt-6">
+          <h2 className="relative max-w-[1440px] lg:m-auto">
+            Find cheap flights from United Kingdom to anywhere
+          </h2>
+        </div>
+      ) : (
+        <FlightResults results={flightResults} />
+      )}
     </>
   );
 }

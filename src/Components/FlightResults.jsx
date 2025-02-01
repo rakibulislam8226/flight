@@ -12,22 +12,20 @@ const formatTime = (isoString) => {
 export default function FlightResults({ results }) {
   if (!results || !Array.isArray(results) || results.length === 0) {
     return (
-      <div className="mt-6">
-        <h2 className="relative max-w-[1440px] m-auto">
-          Find cheap flights from United Kingdom to anywhere
-        </h2>
-      </div>
+      <p className="text-center text-lg font-semibold text-gray-400">
+        No flights found
+      </p>
     );
   }
 
   return (
     <div className="mt-6">
-      <div className="relative max-w-[1440px] m-auto">
+      <div className="relative max-w-[1440px] lg:m-auto">
         <h2 className="text-lg font-semibold mb-4">All Flights</h2>
-        <div className="border rounded-2xl border-white py-4 text-center ">
+        <div className="py-4 text-center">
           {results.map((flight, index) => (
-            <div key={index} className="bg-[#202124] p-1 rounded-lg mb-4">
-              <div className="flex justify-between items-center">
+            <div key={index} className="p-1 border-white border">
+              <div className="flex justify-between items-center ">
                 <div className="flex items-center gap-3">
                   <img
                     src={flight.airlineLogo || "/default-airline.png"}
