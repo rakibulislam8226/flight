@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { IoSwapHorizontal } from "react-icons/io5";
 import UseDebounce from "../CustomHooks/UseDebounce";
+import FlightResults from "./FlightResults";
 
 const RAPIDAPI_BASE_URL = import.meta.env.VITE_RAPIDAPI_BASE_URL;
 const RAPIDAPI_HOST = import.meta.env.VITE_RAPIDAPI_HOST;
@@ -22,6 +23,7 @@ export default function FlightSearch() {
   const [toSuggestions, setToSuggestions] = useState([]);
   const [selectedFromAirport, setSelectedFromAirport] = useState(null);
   const [selectedToAirport, setSelectedToAirport] = useState(null);
+  const [flightResults, setFlightResults] = useState([]);
 
   const debouncedFrom = UseDebounce(from, 500);
   const debouncedTo = UseDebounce(to, 500);
@@ -75,10 +77,6 @@ export default function FlightSearch() {
       alert("Please select a valid airport from the suggestions.");
       return;
     }
-
-    console.log("Selected from airport:", selectedFromAirport);
-    console.log("Selected to airport:", selectedToAirport);
-
     const fromId = selectedFromAirport?.skyId;
     const toId = selectedToAirport?.skyId;
     const fromEntityId = selectedFromAirport.entityId;
@@ -93,9 +91,7 @@ export default function FlightSearch() {
     const validTripType = tripType || "One way";
     const validTripCategoryType = tripCategoryType || "economy";
 
-    console.log(fromId, toId, fromEntityId, toEntityId, date, returnDate);
     const flightUrl = `${RAPIDAPI_BASE_URL}/api/v2/flights/searchFlights?originSkyId=${fromId}&destinationSkyId=${toId}&originEntityId=${fromEntityId}&destinationEntityId=${toEntityId}&date=${deptureDate}&cabinClass=${validTripCategoryType}&adults=1&sortBy=best&currency=USD&market=en-US&countryCode=US`;
-    console.log("Flight search URL:", flightUrl);
 
     try {
       const response = await fetch(flightUrl, {
@@ -105,8 +101,9 @@ export default function FlightSearch() {
           "x-rapidapi-host": RAPIDAPI_HOST,
         },
       });
-      const result = await response.json();
-      console.log("Flight search result:", result);
+      const result = await response.json(); 
+      setFlightResults(result.data.itineraries || []);
+      console.log("Flight Results:", result.data.itineraries);
     } catch (error) {
       console.error("Error fetching flights:", error);
     }
@@ -189,7 +186,6 @@ export default function FlightSearch() {
                         key={suggestion.entityId}
                         className="px-4 py-2 hover:bg-gray-600 cursor-pointer"
                         onClick={() => {
-                          console.log("first", fromSuggestions);
                           setFrom(
                             suggestion.navigation.relevantHotelParams
                               .localizedName
@@ -281,6 +277,8 @@ export default function FlightSearch() {
           </button>
         </div>
       </div>
+      {/* Display Flight Results Below */}
+      <FlightResults results={flightResults} />
     </div>
   );
 }
