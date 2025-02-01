@@ -101,7 +101,7 @@ export default function FlightSearch() {
           "x-rapidapi-host": RAPIDAPI_HOST,
         },
       });
-      const result = await response.json(); 
+      const result = await response.json();
       setFlightResults(result.data.itineraries || []);
       console.log("Flight Results:", result.data.itineraries);
     } catch (error) {
@@ -110,7 +110,7 @@ export default function FlightSearch() {
   };
 
   return (
-    <div className="bg-[#202124] text-white">
+    <>
       <div className="relative max-w-[1440px] m-auto text-center">
         <div className="lg:bg-[#35373A] p-4 lg:rounded-lg shadow-md flex flex-col gap-4">
           <div className="flex items-center gap-2 text-gray-400 text-sm z-100">
@@ -279,6 +279,6 @@ export default function FlightSearch() {
       </div>
       {/* Display Flight Results Below */}
       <FlightResults results={flightResults} />
-    </div>
+    </>
   );
 }

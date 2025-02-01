@@ -10,11 +10,19 @@ const formatTime = (isoString) => {
 };
 
 export default function FlightResults({ results }) {
+    console.log(results)
   if (!results || !Array.isArray(results) || results.length === 0) {
-    return <p></p>;
+    return (
+      <div className="mt-6">
+        <h2 className="relative max-w-[1440px] m-auto">
+          Find cheap flights from United Kingdom to anywhere
+        </h2>
+      </div>
+    );
   }
+
   return (
-    <div className="bg-[#202124] text-white mt-6">
+    <div className="mt-6">
       <div className="relative max-w-[1440px] m-auto">
         <h2 className="text-lg font-semibold mb-4">All Flights</h2>
         <div className="border rounded-2xl border-white py-4 text-center ">

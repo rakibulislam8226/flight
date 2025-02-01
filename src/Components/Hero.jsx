@@ -2,7 +2,7 @@ import React from "react";
 
 function Hero() {
   return (
-    <div className="bg-[#202124]">
+    <>
       <div className="relative max-w-[1640px] lg:m-auto lg:p-4 ">
         <img
           src="https://www.gstatic.com/travel-frontend/animation/hero/flights_nc_dark_theme_4.svg"
@@ -13,7 +13,7 @@ function Hero() {
           Flights
         </p>
       </div>
-    </div>
+    </>
   );
 }
 
